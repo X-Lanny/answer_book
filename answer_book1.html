@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>answer_book</title>
+    <link rel="stylesheet" href="./answer_book.css">
+</head>
+<body>
+    <div class="page-mainer">
+        <h1 class="mainer-title" id="mainer-title">The Book Of Answers</h1>
+        <div class="mainer-intro">
+            <p class="mainer-intro-title">想一个问题，点击获取答案</p>
+            <p class="mainer-desc">答案仅为程序自动运算的结果，用于赛博算命可以，但不能当真呢～</p>
+        </div>
+        <button class="get-answer-btn" id="get-answer-btn">获取答案</button>
+    </div>
+    <script type="text/javascript">
+        //导入Api
+        const API_Answers = 'https://github.com/X-Lanny/answer_book/tree/main/JSON'
+        //点击button的同时，随机获取一个数字，把这个数字对应的文字放入 class="mainer-title" 的innerHTML；
+
+        const PAGE = {
+            data:{
+                answerList:[],
+            },
+            init: function(){
+                this.bind();
+            },
+            bind: function(){
+                let getAnswerBtn = document.getElementById('get-answer-btn');
+                getAnswerBtn.addEventListener('click',this.getAnswer);
+            },
+           
+            //公共请求方法
+            _XHR(method, url, params, datas, success) {
+            const xhr = new XMLHttpRequest();
+            
+            const formatParams = Object.keys(params)
+                .map(k => `${k}=${params[k]}`)
+                .join('&');
+            
+            const formatUrl = formatParams
+                ? `${url}?${formatParams}`
+                : url;
+            
+            xhr.open(method, formatUrl, true);
+
+            const formData = new URLSearchParams();
+            for(let key in datas){
+                formData.append(key, datas[key]);
+            }
+
+            xhr.onerror = (event) => {
+                console.log('error');
+            };
+
+            xhr.onreadystatechange = (response)=>  {
+                if (xhr.readyState == 4 && xhr.status == 200 && xhr.responseText != "") {
+                typeof success === 'function' && success(JSON.parse(xhr.response))
+                } else if (xhr.status != 200 && xhr.responseText) {
+                console.log(xhr, xhr.status, xhr.responseText);
+                }
+            };
+
+            xhr.send(formData);
+            },
+            getAnswer: function(e){
+                PAGE._XHR("GET", API_Answers, {},{},(res) =>{
+                    // 3. 把 todos 设置到 PAGE.data.todos 中。
+                    PAGE.data.answerList = res.data.answerlist;
+                    //随机生成一个数字；
+                    // let getAnswerBtn = document.getElementById('get-answer-btn');
+                    let randomNum =  Math.floor(PAGE.data.answerlist.length * Math.random());
+                    let questionAnswer = document.getElementById('mainer-title');
+                    questionAnswer.innerHTML  = PAGE.data.answerlist[randomNum].answer;
+                    // questionAnswer.textContent = PAGE.answerlist.data[randomNum].answer;这样写也可以；
+                })
+                
+            },
+        }
+        PAGE.init();
+    </script>
+</body>
+</html>
+
